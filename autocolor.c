@@ -81,7 +81,7 @@ int main(void)
     .speed = 1,
   };
   
-  Canvas c = create_canvas(w.width, w.height, VON_NEUMANN, 3, 0);
+  Canvas c = create_canvas(w.width, w.height, MOORE, 3, 0);
   c.neighborhood = MOORE;
 
   CANVAS_AT(c, c.width/2, c.height/2) = WHITE;
@@ -274,24 +274,29 @@ NeighborInfo count_neighbors(Canvas c, int i, int j)
   NeighborInfo ni = {0};
   Color colors[8] = {0};
 
+  const bool has_left  = (i - 1 >= 0);
+  const bool has_right = (i + 1 < c.width);
+  const bool has_top  = (j - 1 >= 0);
+  const bool has_bttm = (j + 1 < c.height);
+
   switch (c.neighborhood) {
 
     case VON_NEUMANN:
-      if (i - 1 >= 0       && color_not_equal(CANVAS_AT(c, i - 1, j), BLACK)) colors[ni.count++] = CANVAS_AT(c, i - 1, j);
-      if (i + 1 < c.width  && color_not_equal(CANVAS_AT(c, i + 1, j), BLACK)) colors[ni.count++] = CANVAS_AT(c, i + 1, j);
-      if (j - 1 >= 0       && color_not_equal(CANVAS_AT(c, i, j - 1), BLACK)) colors[ni.count++] = CANVAS_AT(c, i, j - 1);
-      if (j + 1 < c.height && color_not_equal(CANVAS_AT(c, i, j + 1), BLACK)) colors[ni.count++] = CANVAS_AT(c, i, j + 1);
+      if (has_left  && color_not_equal(CANVAS_AT(c, i - 1, j), BLACK)) colors[ni.count++] = CANVAS_AT(c, i - 1, j);
+      if (has_right && color_not_equal(CANVAS_AT(c, i + 1, j), BLACK)) colors[ni.count++] = CANVAS_AT(c, i + 1, j);
+      if (has_top   && color_not_equal(CANVAS_AT(c, i, j - 1), BLACK)) colors[ni.count++] = CANVAS_AT(c, i, j - 1);
+      if (has_bttm  && color_not_equal(CANVAS_AT(c, i, j + 1), BLACK)) colors[ni.count++] = CANVAS_AT(c, i, j + 1);
       break;
 
     case MOORE:
-      if (i - 1 >= 0       && j - 1 >= 0       && color_not_equal(CANVAS_AT(c, i - 1, j - 1), BLACK)) colors[ni.count++] = CANVAS_AT(c, i - 1, j - 1); 
-      if (i + 1 < c.width  && j + 1 < c.height && color_not_equal(CANVAS_AT(c, i + 1, j + 1), BLACK)) colors[ni.count++] = CANVAS_AT(c, i + 1, j + 1); 
-      if (i - 1 >= 0       && j + 1 < c.height && color_not_equal(CANVAS_AT(c, i - 1, j + 1), BLACK)) colors[ni.count++] = CANVAS_AT(c, i - 1, j + 1); 
-      if (i + 1 < c.width  && j - 1 >= 0       && color_not_equal(CANVAS_AT(c, i + 1, j - 1), BLACK)) colors[ni.count++] = CANVAS_AT(c, i + 1, j - 1); 
-      if (i - 1 >= 0       && color_not_equal(CANVAS_AT(c, i - 1, j), BLACK)) colors[ni.count++] = CANVAS_AT(c, i - 1, j);
-      if (i + 1 < c.width  && color_not_equal(CANVAS_AT(c, i + 1, j), BLACK)) colors[ni.count++] = CANVAS_AT(c, i + 1, j);
-      if (j - 1 >= 0       && color_not_equal(CANVAS_AT(c, i, j - 1), BLACK)) colors[ni.count++] = CANVAS_AT(c, i, j - 1);
-      if (j + 1 < c.height && color_not_equal(CANVAS_AT(c, i, j + 1), BLACK)) colors[ni.count++] = CANVAS_AT(c, i, j + 1);
+      if (has_left  && has_top  && color_not_equal(CANVAS_AT(c, i - 1, j - 1), BLACK)) colors[ni.count++] = CANVAS_AT(c, i - 1, j - 1); 
+      if (has_right && has_bttm && color_not_equal(CANVAS_AT(c, i + 1, j + 1), BLACK)) colors[ni.count++] = CANVAS_AT(c, i + 1, j + 1); 
+      if (has_left  && has_bttm && color_not_equal(CANVAS_AT(c, i - 1, j + 1), BLACK)) colors[ni.count++] = CANVAS_AT(c, i - 1, j + 1); 
+      if (has_right && has_top  && color_not_equal(CANVAS_AT(c, i + 1, j - 1), BLACK)) colors[ni.count++] = CANVAS_AT(c, i + 1, j - 1); 
+      if (has_left  && color_not_equal(CANVAS_AT(c, i - 1, j), BLACK)) colors[ni.count++] = CANVAS_AT(c, i - 1, j);
+      if (has_right && color_not_equal(CANVAS_AT(c, i + 1, j), BLACK)) colors[ni.count++] = CANVAS_AT(c, i + 1, j);
+      if (has_top   && color_not_equal(CANVAS_AT(c, i, j - 1), BLACK)) colors[ni.count++] = CANVAS_AT(c, i, j - 1);
+      if (has_bttm  && color_not_equal(CANVAS_AT(c, i, j + 1), BLACK)) colors[ni.count++] = CANVAS_AT(c, i, j + 1);
       break;
 
     default:
@@ -299,6 +304,7 @@ NeighborInfo count_neighbors(Canvas c, int i, int j)
       exit(0);
       break;
   }
+
   ni.avg_color = ni.count > 0 ? average_neighbors_colors(colors, ni.count) : BLACK;
   return ni;
 }
