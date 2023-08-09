@@ -1,0 +1,1 @@
+# Autocolor - A Cellular Automata
